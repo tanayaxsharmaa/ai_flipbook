@@ -227,7 +227,7 @@ const App = () => {
     if (!aiPrompt || pagesData.length === 0) return;
     
     setAiError(null);
-    const apiKey = "AIzaSyBTjmL_aCLX_Cs9GTHfT0oxKkGruvA7fXQ";
+    const apiKey = "API_KEY";
     if (!apiKey) {
       setAiError("API Key is not configured. Please check your setup.");
       return;
