@@ -1,0 +1,5 @@
+{
+  "name": "React Flipbook Animation",
+  "description": "A visually appealing flipbook web application built with React and Tailwind CSS. It features realistic page-flipping animations, automatic and manual page turning via swipe, and a hand icon as a visual cue for interaction.",
+  "requestFramePermissions": []
+}
