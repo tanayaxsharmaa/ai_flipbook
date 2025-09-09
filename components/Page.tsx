@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { PageData } from '../types';
 
@@ -11,6 +10,7 @@ interface PageProps {
   flippingAngle: number;
   exportAnimation: { pageIndex: number, progress: number } | null;
   isTopPage: boolean;
+  totalPages: number;
 }
 
 const BindingPost = ({ top }: { top: string }) => {
@@ -21,8 +21,10 @@ const BindingPost = ({ top }: { top: string }) => {
     width: '50px',
     height: '50px',
     borderRadius: '50%',
-    background: 'radial-gradient(circle at 18px 18px, #FFFDE4 0%, #FDEE88 30%, #D4AF37 60%, #B37400 100%)',
-    boxShadow: 'inset 0 0 6px rgba(0,0,0,0.6), 2px 2px 3px rgba(0,0,0,0.3), 0 0 0 2px rgba(0,0,0,0.2)',
+    // A gradient that simulates a flat, metallic surface (like a brass paper fastener)
+    background: 'radial-gradient(ellipse at center, #EADCB3 0%, #C8A860 100%)',
+    // Removed inset shadows for a flatter look, just a simple border to define the shape.
+    boxShadow: '0 0 0 1px rgba(0,0,0,0.3)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -30,11 +32,11 @@ const BindingPost = ({ top }: { top: string }) => {
 
   const screwSlotStyle: React.CSSProperties = {
     width: '30px',
-    height: '6px',
-    background: 'linear-gradient(to top, #503000, #805000)',
+    height: '4px', // Thinner slot
+    background: '#8B6F47', // A darker, less saturated brass color
     borderRadius: '2px',
-    transform: 'rotate(10deg)',
-    boxShadow: 'inset 0px 1px 1px rgba(0,0,0,0.5)',
+    // Add a very subtle inner shadow to give it a tiny bit of depth.
+    boxShadow: 'inset 0px 1px 1px rgba(0,0,0,0.2)',
   };
 
   return (
@@ -45,7 +47,7 @@ const BindingPost = ({ top }: { top: string }) => {
 };
 
 
-const Page = ({ pageData, isFlipped, zIndex, isFlipping, flippingAngle, exportAnimation, isTopPage }: PageProps) => {
+const Page = ({ pageData, isFlipped, zIndex, isFlipping, flippingAngle, exportAnimation, isTopPage, totalPages }: PageProps) => {
   const [rotation] = useState(Math.random() * 1.5 - 0.75);
 
   const paperStyle: React.CSSProperties = {
@@ -108,14 +110,26 @@ const Page = ({ pageData, isFlipped, zIndex, isFlipping, flippingAngle, exportAn
     return null;
   }
   
-  const bindingShadowStyle: React.CSSProperties = {
+  const frontBindingShadowStyle: React.CSSProperties = {
     position: 'absolute',
     top: 0,
-    width: '80px', // Wider, more pronounced shadow
+    left: 0,
+    width: '80px',
     height: '100%',
     pointerEvents: 'none',
-    // Stronger gradient to hide posts
-    background: 'linear-gradient(to right, rgba(20,10,5,0.95) 0%, rgba(20,10,5,0.7) 25%, rgba(0,0,0,0.2) 60%, transparent 100%)',
+    // A softer shadow for aesthetic depth on the page surface
+    background: 'linear-gradient(to right, rgba(0,0,0,0.25) 0%, transparent 100%)',
+  };
+
+  const backBindingShadowStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: '80px',
+    height: '100%',
+    pointerEvents: 'none',
+    // A very strong, opaque shadow to completely hide the binding posts on the page underneath during a flip.
+    background: 'linear-gradient(to left, rgba(10,5,2,1) 0%, rgba(10,5,2,1) 80%, transparent 100%)',
   };
 
   const renderBindingPosts = () => (
@@ -151,8 +165,8 @@ const Page = ({ pageData, isFlipped, zIndex, isFlipping, flippingAngle, exportAn
                 transition: 'opacity 0.1s'
             }}
         />
-        <div style={{...bindingShadowStyle, left: 0 }} />
-        {isTopPage && !isFlipping && !exportAnimation && renderBindingPosts()}
+        <div style={frontBindingShadowStyle} />
+        {isTopPage && !isFlipping && !exportAnimation && (pageData.id < totalPages - 1) && renderBindingPosts()}
       </div>
 
       {/* Back of the page */}
@@ -165,7 +179,7 @@ const Page = ({ pageData, isFlipped, zIndex, isFlipping, flippingAngle, exportAn
           backfaceVisibility: 'hidden',
         }}
       >
-        <div style={{...bindingShadowStyle, right: 0, background: 'linear-gradient(to left, rgba(20,10,5,0.95) 0%, rgba(20,10,5,0.7) 25%, rgba(0,0,0,0.2) 60%, transparent 100%)' }} />
+        <div style={backBindingShadowStyle} />
       </div>
 
       <div

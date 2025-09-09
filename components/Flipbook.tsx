@@ -1,9 +1,8 @@
-
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageData } from '../types';
 import Page from './Page';
 import { ThumbIcon } from './Icons';
+import { usePrevious } from '../hooks/usePrevious';
 
 interface FlipbookProps {
   pages: PageData[];
@@ -56,7 +55,7 @@ const PageStack = ({ count, side, totalPages }: { count: number, side: 'left' | 
       radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%),
       linear-gradient(to right, rgba(0,0,0,0.2), transparent 4px), 
       repeating-linear-gradient(
-        179deg,
+        to bottom,
         #f5f2e8 0, #f5f2e8 0.5px,
         #c7c4bb 0.5px, #c7c4bb 1px
       )`;
@@ -66,7 +65,7 @@ const PageStack = ({ count, side, totalPages }: { count: number, side: 'left' | 
       radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%),
       linear-gradient(to left, rgba(0,0,0,0.2), transparent 4px), 
       repeating-linear-gradient(
-        179deg,
+        to bottom,
         #f5f2e8 0, #f5f2e8 0.5px,
         #c7c4bb 0.5px, #c7c4bb 1px
       )`;
@@ -86,6 +85,7 @@ const PageStack = ({ count, side, totalPages }: { count: number, side: 'left' | 
 const Flipbook = React.forwardRef<HTMLDivElement, FlipbookProps>(
   ({ pages, currentPage, setCurrentPage, isAnimating, totalPages, exportAnimation }, ref) => {
     const [dragState, setDragState] = useState<{ startX: number; pageIndex: number; angle: number } | null>(null);
+    const prevCurrentPage = usePrevious(currentPage);
 
     const goToNextPage = () => {
       if (currentPage < totalPages - 1) {
@@ -125,10 +125,10 @@ const Flipbook = React.forwardRef<HTMLDivElement, FlipbookProps>(
 
     const thumbStyle: React.CSSProperties = {
       position: 'absolute',
-      top: '75%',
-      right: '0px',
-      width: '80px',
-      height: '80px',
+      top: '65%',
+      right: '-40px',
+      width: '100px',
+      height: '120px',
       transform: 'translateY(-50%)',
       pointerEvents: 'none',
       transition: 'opacity 0.5s ease-in-out',
@@ -182,10 +182,15 @@ const Flipbook = React.forwardRef<HTMLDivElement, FlipbookProps>(
             const isFlipping = dragState?.pageIndex === index;
             
             let zIndex;
+
+            const isTurningNext = prevCurrentPage !== undefined && currentPage > prevCurrentPage && index === prevCurrentPage;
+            const isTurningPrev = prevCurrentPage !== undefined && currentPage < prevCurrentPage && index === currentPage;
+
             if (exportAnimation) {
                 zIndex = exportAnimation.pageIndex === index ? totalPages + 1 : (index < exportAnimation.pageIndex ? index + 1 : totalPages - index);
             } else {
-                zIndex = isFlipping ? totalPages + 1 : (isFlipped ? index + 1 : totalPages - index);
+                const isManuallyTurning = !isAnimating && (isTurningNext || isTurningPrev);
+                zIndex = isFlipping || isManuallyTurning ? totalPages + 1 : (isFlipped ? index + 1 : totalPages - index);
             }
 
             return (
@@ -198,6 +203,7 @@ const Flipbook = React.forwardRef<HTMLDivElement, FlipbookProps>(
                 flippingAngle={dragState?.angle ?? 0}
                 exportAnimation={exportAnimation}
                 isTopPage={index === currentPage}
+                totalPages={totalPages}
               />
             );
           })}
